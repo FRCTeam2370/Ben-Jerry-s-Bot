@@ -4,9 +4,11 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
@@ -28,13 +30,28 @@ public class Drive extends SubsystemBase {
     LeftPassenger.follow(LeftDriver);
     LeftDriver.setInverted(true);
     LeftPassenger.setInverted(true);
+
+    RightDriver.configPeakCurrentLimit(40);
+    RightPassenger.configPeakCurrentLimit(40);
+    LeftDriver.configPeakCurrentLimit(40);
+    LeftPassenger.configPeakCurrentLimit(40);
   }
 
   public static void drive (double XSpeed, double Rotation) {
-    mDrive.arcadeDrive(XSpeed, Rotation);
+    double bias = 0;
+  
+    if (XSpeed < 0) {
+      //bias = 0.55 * Math.pow(XSpeed, 2) + 0.1;
+      bias = XSpeed + 0.2;
+      XSpeed *= 1.5;
+    }
+
+    mDrive.arcadeDrive(XSpeed, Rotation - bias);
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Drive Left Amps", LeftDriver.getMotorOutputVoltage());
+    SmartDashboard.putNumber("Drive Right Amps", RightDriver.getMotorOutputVoltage());
   }
 }
